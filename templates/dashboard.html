@@ -235,13 +235,6 @@ Dashboard – {{ project.name }}
             <h6 class="mb-2">#{{ loop.index }} – {{ t.description }}</h6>
             <p><i class="bi bi-clock"></i> {{ t.time_range }}</p>
 
-            {% if photos %}
-            <div class="mb-2 d-flex justify-content-center flex-wrap">
-              {% for photo in photos %}
-              <img src="{{ url_for('static', filename='uploads/' ~ photo) }}" alt="Task photo">
-              {% endfor %}
-            </div>
-            {% endif %}
 
             <form method="post" action="{{ url_for('upload_photos', pid=project._id) }}" enctype="multipart/form-data" class="d-flex flex-column gap-2 w-100 px-4">
               <input type="hidden" name="task_idx" value="{{ idx }}">
