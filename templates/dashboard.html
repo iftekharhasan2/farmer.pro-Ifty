@@ -122,6 +122,12 @@ Dashboard – {{ project.name }}
 
 {% block body %}
 
+<noscript>
+  <div class="alert alert-warning text-center">
+    This page works best with JavaScript enabled.
+  </div>
+</noscript>
+
 <!-- Project Summary Cards -->
 <div class="container my-4">
   <div class="row g-3">
@@ -166,8 +172,8 @@ Dashboard – {{ project.name }}
 <div class="container">
   <h4 class="mb-3">📝 Today’s Tasks</h4>
   <h2 style="font-family: 'SolaimanLipi', Arial, sans-serif; font-size: 18px; color: #2c3e50;">
-  <strong>পরের দিনের শুরু পর্যন্ত অবশিষ্ট সময়:</strong> {{ now }}
-</h2>
+    <strong>পরের দিনের শুরু পর্যন্ত অবশিষ্ট সময়:</strong> {{ now }}
+  </h2>
 
   <!-- Desktop Table View -->
   <div class="table-responsive d-none d-md-block">
@@ -230,8 +236,6 @@ Dashboard – {{ project.name }}
         <div class="swiper-slide">
           <div class="w-100 text-center d-flex flex-column align-items-center justify-content-center">
             <h6 class="mb-2">#{{ loop.index }} – {{ t.description }}</h6>
-
-            <!-- Improved Time Display -->
             <p><i class="bi bi-clock"></i> {{ t.time_range }}</p>
 
             {% if photos %}
@@ -256,36 +260,61 @@ Dashboard – {{ project.name }}
   </div>
 </div>
 
-
-
-
-
-
 <!-- Navigation -->
 <div class="container mt-4">
   <a href="{{ url_for('projects') }}" class="btn btn-outline-secondary w-100 w-sm-auto">
     <i class="bi bi-arrow-left-circle"></i> Back to Projects
   </a>
 </div>
-
 {% endblock %}
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
-  const swiper = new Swiper('.swiper', {
-    direction: 'vertical',
-    slidesPerView: 1,
-    spaceBetween: 0,
-    mousewheel: true,
-    pagination: {
-      el: '.swiper-pagination',
-      clickable: true,
-    },
-    cssMode: false,
-    effect: 'slide',
+  try {
+    const swiper = new Swiper('.swiper', {
+      direction: 'vertical',
+      slidesPerView: 1,
+      spaceBetween: 0,
+      mousewheel: true,
+      pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+      },
+      cssMode: false,
+      effect: 'slide',
+    });
+  } catch (err) {
+    console.error("Swiper init failed", err);
+  }
+
+  // Preview image logic
+  document.addEventListener("DOMContentLoaded", function () {
+    const fileInputs = document.querySelectorAll('input[type="file"][name="photos"]');
+
+    fileInputs.forEach((input) => {
+      input.addEventListener("change", function (event) {
+        const file = event.target.files[0];
+        const previewContainer = event.target.closest("form").querySelector(".preview-container");
+
+        // Clear previous preview
+        if (previewContainer) previewContainer.innerHTML = "";
+
+        if (file && file.type.startsWith("image/")) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const img = document.createElement("img");
+            img.src = e.target.result;
+            img.className = "img-preview";
+            img.style.maxWidth = "100px";
+            img.style.borderRadius = "0.5rem";
+            img.style.marginTop = "0.5rem";
+            previewContainer?.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    });
   });
 </script>
-
-
 {% endblock %}
