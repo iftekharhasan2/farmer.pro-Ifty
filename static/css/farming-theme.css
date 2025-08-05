@@ -167,3 +167,11 @@ img.rounded:hover {
   margin-bottom: 1.5rem;
   text-align: center;
 }
+
+.time {
+  font-size: 1.1rem;
+  color: #0a79e8;
+  margin: 0.5rem;
+  background: #151617;
+  /* padding: 0 12px; */
+}
