@@ -247,52 +247,29 @@ def upload_photos(pid):
         return redirect(url_for("projects"))
 
     proj = proj_col.find_one({"_id": proj_id, "owner": session["user_id"]})
-    if not proj:
-        flash("Project not found or access denied.", "danger")
-        return redirect(url_for("projects"))
-
     task_idx = request.form.get("task_idx")
-    if not task_idx:
-        flash("Missing task index.", "danger")
-        return redirect(url_for("dashboard", pid=pid))
-
     files = request.files.getlist("photos")
-    if not files or files == [None]:
-        flash("No files selected for upload.", "warning")
-        return redirect(url_for("dashboard", pid=pid))
-
-    # Ensure upload folder exists
-    upload_folder = current_app.config.get("UPLOAD_FOLDER", "uploads")
-    os.makedirs(upload_folder, exist_ok=True)
-
-    try:
+    if proj and task_idx:
         task_photos = proj.get("task_photo", {}).get(task_idx, [])
         if isinstance(task_photos, str):
             task_photos = [task_photos]
         saved = []
         for file in files:
-            if file and file.filename and allowed(file.filename):
+            if file and allowed(file.filename):
                 filename = f"{ObjectId()}_{secure_filename(file.filename)}"
-                file_path = os.path.join(upload_folder, filename)
-                file.save(file_path)
                 saved.append(filename)
-        if not saved:
-            flash("No valid photos were uploaded.", "warning")
-            return redirect(url_for("dashboard", pid=pid))
+        task_photos.extend(saved)
 
-        # Update photos in DB
-        proj_col.update_one({"_id": proj["_id"]}, {"$set": {f"task_photo.{task_idx}": task_photos + saved}})
+        # Update photos
+        proj_col.update_one({"_id": proj["_id"]}, {"$set": {f"task_photo.{task_idx}": task_photos}})
 
-        # Mark task as done if photos uploaded
-        task_done = proj.get("task_done", {})
-        task_done[task_idx] = True
-        proj_col.update_one({"_id": proj["_id"]}, {"$set": {"task_done": task_done}})
+        # Mark task as done if any photo uploaded
+        if saved:
+            task_done = proj.get("task_done", {})
+            task_done[task_idx] = True
+            proj_col.update_one({"_id": proj["_id"]}, {"$set": {"task_done": task_done}})
 
         flash(f"Uploaded {len(saved)} photo(s)! Task marked as done.", "success")
-    except Exception as e:
-        current_app.logger.error(f"Photo upload error for project {pid}: {e}")
-        flash("An error occurred while uploading photos.", "danger")
-
     return redirect(url_for("dashboard", pid=pid))
 
 @app.route('/some_form')
