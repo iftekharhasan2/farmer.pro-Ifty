@@ -59,6 +59,17 @@ def days_since(d):
         d = d.date()
     return (datetime.date.today() - d).days
 
+def time_left_for_next_day_bangla():
+    now = datetime.datetime.now()
+    next_day = (now + datetime.timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    remaining = next_day - now
+    total_seconds = int(remaining.total_seconds())
+
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+
+    return f"{hours:02} ঘণ্টা {minutes:02} মিনিট {seconds:02} সেকেন্ড"
+
 def feed_level(weight, animal):
     if animal == "goat":
         if weight < 15: return 1
@@ -190,6 +201,7 @@ def dashboard(pid):
         return redirect(url_for("projects"))
     days = days_since(proj["purchase_date"])
     today = date.today().isoformat()
+    now = time_left_for_next_day_bangla()
     period = proj["check_period"]
     show_weight = (days % period == 0 and days != 0) or proj["type"] == "goat"
     days_left = (period - (days % period)) % period
@@ -201,7 +213,7 @@ def dashboard(pid):
     proj.setdefault("task_done", {})
     proj.setdefault("task_photo", {})
     return render_template("dashboard.html", project=proj, schedule=schedule, days=days,
-                           show_weight_input=show_weight, days_left=days_left ,today=today)
+                           show_weight_input=show_weight, days_left=days_left ,today=today , now=now)
 
 @app.route("/projects/<pid>/weight", methods=["POST"])
 def update_weight(pid):
