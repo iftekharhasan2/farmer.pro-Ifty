@@ -232,7 +232,9 @@ Dashboard – {{ project.name }}
         {% endif %}
         <div class="swiper-slide">
           <div class="w-100 text-center d-flex flex-column align-items-center justify-content-center">
-            <h6 class="mb-2">#{{ loop.index }} – {{ t.description }}</h6>
+            <h6 class="mb-2" style="background-color: #f0f8ff; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 700; color: #0056b3;">
+              #{{ loop.index }} – {{ t.description }}
+            </h6>
             <p><i class="bi bi-clock"></i> {{ t.time_range }}</p>
 
 
