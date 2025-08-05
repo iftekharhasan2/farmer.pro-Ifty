@@ -1,0 +1,79 @@
+/* Farming-themed styling for My Projects page - Vibrant Version */
+
+h2 {
+  font-family: 'Cabin', sans-serif;
+  color: #2e7d32; /* Rich green */
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.btn-agro {
+  background-color: #28a745; /* Brighter green */
+  color: white;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-agro:hover, .btn-agro:focus {
+  background-color: #218838;
+  transform: scale(1.05);
+  color: white;
+  text-decoration: none;
+}
+
+.card {
+  border-radius: 1rem;
+  box-shadow: 0 6px 15px rgba(0, 128, 0, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: #ffffff;
+  border: 2px solid #a5d6a7;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 25px rgba(0, 100, 0, 0.3);
+}
+
+.card-title {
+  font-family: 'Cabin', sans-serif;
+  color: #145a32;
+  font-weight: 800;
+  font-size: 1.4rem;
+}
+
+.text-muted {
+  color: #2e7d32 !important;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.card-text small {
+  font-weight: 700;
+  color: #4e944f;
+}
+
+.badge.bg-success {
+  background-color: #2ecc71 !important; /* Brighter green badge */
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.5em 0.8em;
+  border-radius: 0.6rem;
+}
+
+.btn-outline-success {
+  border-color: #28a745;
+  color: #28a745;
+  font-weight: 700;
+  border-radius: 0.5rem;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-outline-success:hover, .btn-outline-success:focus {
+  background-color: #28a745;
+  color: white;
+  transform: scale(1.05);
+  text-decoration: none;
+}

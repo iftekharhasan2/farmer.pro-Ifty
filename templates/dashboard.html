@@ -1,0 +1,291 @@
+{% extends 'profile.html' %}
+
+{% block title %}
+Dashboard – {{ project.name }}
+{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Cabin&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/farming-theme.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+<style>
+  body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f7f9fc;
+  }
+
+  .swiper {
+    width: 100%;
+    padding-bottom: 2rem;
+  }
+
+  .swiper-slide {
+    background: #fff;
+    border-radius: 1rem;
+    padding: 1rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  @media (max-width: 768px) {
+    h3 {
+      font-size: 1.25rem;
+    }
+
+    small {
+      font-size: 0.9rem;
+    }
+
+    .btn,
+    .form-control {
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
+    }
+
+    .swiper {
+      height: auto;
+      padding-bottom: 3rem;
+    }
+
+    .card {
+      border-radius: 1rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .table-responsive {
+      display: none !important;
+    }
+
+    .swiper {
+      height: 100vh;
+    }
+
+    .swiper-slide {
+      height: 100vh;
+      padding: 2rem 1rem;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .swiper-slide h6 {
+      font-size: 1.2rem;
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .swiper-slide p {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      text-align: center;
+      color: #333;
+      font-weight: 500;
+      background-color: #e6f4ea;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      width: fit-content;
+    }
+
+    .swiper-slide img {
+      width: 100%;
+      max-width: 300px;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    form input[type="file"] {
+      font-size: 0.85rem;
+    }
+
+    .swiper-pagination {
+      position: absolute;
+      bottom: 10px;
+      text-align: center;
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+
+<!-- Project Summary Cards -->
+<div class="container my-4">
+  <div class="row g-3">
+    {% set stats = [
+      ('text-success', project.target ~ ' kg', 'Target'),
+      ('text-primary', (project.weight or 0) ~ ' kg', 'Current'),
+      ('text-warning', 'Level ' ~ project.feed_level, 'Feed')
+    ] %}
+    {% for color, value, label in stats %}
+    <div class="col-12 col-sm-6 col-md-4">
+      <div class="card text-center h-100">
+        <div class="card-body">
+          <h3 class="{{ color }}">{{ value }}</h3>
+          <small>{{ label }}</small>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Weight Input or Countdown -->
+<div class="container-fluid mb-4">
+  {% if show_weight_input %}
+  <form method="post" action="{{ url_for('update_weight', pid=project._id) }}" class="row g-2 align-items-center">
+    <div class="col-12 col-sm-8">
+      <input type="number" step="0.1" name="weight" class="form-control form-control-lg" placeholder="Today’s weight (kg)" required>
+    </div>
+    <div class="col-12 col-sm-4">
+      <button class="btn btn-success w-100 btn-lg">Save</button>
+    </div>
+  </form>
+  {% else %}
+  <div class="alert alert-info d-flex align-items-center">
+    <i class="bi bi-clock me-2"></i>
+    <div>Next weight check in <strong>{{ days_left }}</strong> day(s).</div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Task Section -->
+<div class="container">
+  <h4 class="mb-3">📝 Today’s Tasks</h4>
+  <h2 style="font-family: 'SolaimanLipi', Arial, sans-serif; font-size: 18px; color: #2c3e50;">
+  <strong>পরের দিনের শুরু পর্যন্ত অবশিষ্ট সময়:</strong> {{ now }}
+</h2>
+
+  <!-- Desktop Table View -->
+  <div class="table-responsive d-none d-md-block">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>#</th>
+          <th>Task</th>
+          <th>Time</th>
+          <th>Upload Photo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set task_done = project.task_done or {} %}
+        {% for t in schedule %}
+        {% set idx = loop.index0 %}
+        {% set photos = project.task_photo.get(idx|string, []) %}
+        {% if photos is string %}
+        {% set photos = [photos] %}
+        {% endif %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>
+            {{ t.description }}
+            {% if photos|length > 0 %}
+            <span class="badge bg-success ms-2"><i class="bi bi-check-circle"></i> Done</span>
+            {% endif %}
+          </td>
+          <td class="p-4">{{ t.time_range }}</td>
+          <td>
+            {% if photos %}
+            <div class="mb-2 d-flex flex-wrap">
+              {% for photo in photos %}
+              <img src="{{ url_for('static', filename='uploads/' ~ photo) }}" class="rounded me-2 mb-2" width="60" alt="Task photo">
+              {% endfor %}
+            </div>
+            {% endif %}
+            <form method="post" action="{{ url_for('upload_photos', pid=project._id) }}" enctype="multipart/form-data" class="d-flex flex-column gap-2">
+              <input type="hidden" name="task_idx" value="{{ idx }}">
+              <input type="file" name="photos" accept="image/*" class="form-control form-control-sm" required {% if photos %}disabled{% endif %}>
+              <button type="submit" class="btn btn-sm btn-primary mt-1" {% if photos %}disabled{% endif %}>Upload</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Mobile Swiper View -->
+  <div class="d-md-none">
+    <div class="swiper">
+      <div class="swiper-wrapper">
+        {% for t in schedule %}
+        {% set idx = loop.index0 %}
+        {% set photos = project.task_photo.get(idx|string, []) %}
+        {% if photos is string %}
+        {% set photos = [photos] %}
+        {% endif %}
+        <div class="swiper-slide">
+          <div class="w-100 text-center d-flex flex-column align-items-center justify-content-center">
+            <h6 class="mb-2">#{{ loop.index }} – {{ t.description }}</h6>
+
+            <!-- Improved Time Display -->
+            <p><i class="bi bi-clock"></i> {{ t.time_range }}</p>
+
+            {% if photos %}
+            <div class="mb-2 d-flex justify-content-center flex-wrap">
+              {% for photo in photos %}
+              <img src="{{ url_for('static', filename='uploads/' ~ photo) }}" alt="Task photo">
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" action="{{ url_for('upload_photos', pid=project._id) }}" enctype="multipart/form-data" class="d-flex flex-column gap-2 w-100 px-4">
+              <input type="hidden" name="task_idx" value="{{ idx }}">
+              <input type="file" name="photos" accept="image/*" class="form-control form-control-sm" required {% if photos %}disabled{% endif %}>
+              <button type="submit" class="btn btn-sm btn-primary mt-1 w-100" {% if photos %}disabled{% endif %}>Upload</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="swiper-pagination mt-3"></div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+<!-- Navigation -->
+<div class="container mt-4">
+  <a href="{{ url_for('projects') }}" class="btn btn-outline-secondary w-100 w-sm-auto">
+    <i class="bi bi-arrow-left-circle"></i> Back to Projects
+  </a>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+  const swiper = new Swiper('.swiper', {
+    direction: 'vertical',
+    slidesPerView: 1,
+    spaceBetween: 0,
+    mousewheel: true,
+    pagination: {
+      el: '.swiper-pagination',
+      clickable: true,
+    },
+    cssMode: false,
+    effect: 'slide',
+  });
+</script>
+
+
+{% endblock %}

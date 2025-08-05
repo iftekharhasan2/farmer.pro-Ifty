@@ -1,0 +1,33 @@
+{% extends 'profile.html' %}
+{% block title %}New Project{% endblock %}
+{% block body %}
+<h2><i class="bi bi-file-earmark-plus"></i> New Project</h2>
+<form method="post" class="card p-4">
+  <div class="mb-3">
+    <label class="form-label">Name</label>
+    <input type="text" name="name" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Type</label>
+    <select name="type" class="form-select" required>
+      <option value="cow">🐄 Cow</option>
+      <option value="goat">🐐 Goat</option>
+      <option value="sheep">🐑 Sheep</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Purchase Date</label>
+    <input type="date" name="purchase_date" class="form-control" id="purchaseDate" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Start Weight (kg)</label>
+    <input type="number" step="0.1" name="weight" class="form-control" required>
+  </div>
+  <button class="btn btn-agro">Create</button>
+</form>
+
+<script>
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('purchaseDate').setAttribute('min', today);
+</script>
+{% endblock %}

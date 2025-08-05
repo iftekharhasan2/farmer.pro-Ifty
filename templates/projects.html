@@ -1,0 +1,99 @@
+{% extends 'profile.html' %}
+
+{% block title %}My Projects{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Cabin&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/farming-projects.css') }}">
+<style>
+  @media (max-width: 768px) {
+    h2 {
+      font-size: 1.5rem;
+      text-align: center;
+    }
+
+    .btn-agro {
+      width: 100%;
+      font-size: 1rem;
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    .card {
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+    }
+
+    .card-text small {
+      font-size: 0.95rem;
+    }
+
+    .btn-outline-success {
+      width: 100%;
+      font-size: 1rem;
+      padding: 0.5rem;
+    }
+
+    .row {
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    .col-md-4 {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .card-body {
+      padding: 1rem;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+    }
+
+    .card-text small {
+      font-size: 0.85rem;
+    }
+
+    .btn-outline-success {
+      font-size: 0.95rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<h2 class="mb-4"><i class="bi bi-house-heart"></i> My Fattening Projects</h2>
+
+<a href="{{ url_for('new_project') }}" class="btn btn-agro mb-3">
+  <i class="bi bi-plus-circle"></i> New Project
+</a>
+
+<div class="row">
+  {% for p in projects %}
+    <div class="col-12 col-sm-6 col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">{{ p.name }}</h5>
+          <h6 class="text-muted">{{ p.type.upper() }}</h6>
+          <p class="card-text">
+            <small>Day {{ days[p._id|string] }}</small><br>
+            📊 Feed Level <span class="badge bg-success">{{ p.feed_level }}</span>
+          </p>
+          <a href="{{ url_for('dashboard', pid=p._id) }}" class="btn btn-outline-success">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <p class="text-muted">No projects yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}

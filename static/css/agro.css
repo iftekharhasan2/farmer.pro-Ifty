@@ -1,0 +1,35 @@
+:root {
+  --agro-green: #28a745; /* Primary agro green color */
+}
+
+body {
+  background: #f8f9fa; /* Light gray background for clean look */
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+}
+
+.navbar-brand {
+  font-weight: bold;
+  color: var(--agro-green) !important; /* Navbar brand styled in green */
+}
+
+.card {
+  border-radius: 0.75rem; /* Rounded corners */
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Subtle shadow */
+}
+
+.btn-agro {
+  background: var(--agro-green); /* Green button */
+  color: #fff;
+}
+
+.btn-agro:hover {
+  background: #218838; /* Darker green on hover */
+  color: #fff;
+}
+.alert {
+  font-weight: 600;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 8px;
+}
