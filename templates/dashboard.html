@@ -271,50 +271,44 @@ Dashboard – {{ project.name }}
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
-  try {
-    const swiper = new Swiper('.swiper', {
-      direction: 'vertical',
-      slidesPerView: 1,
-      spaceBetween: 0,
-      mousewheel: true,
-      pagination: {
-        el: '.swiper-pagination',
-        clickable: true,
-      },
-      cssMode: false,
-      effect: 'slide',
-    });
-  } catch (err) {
-    console.error("Swiper init failed", err);
-  }
-
-  // Preview image logic
   document.addEventListener("DOMContentLoaded", function () {
     const fileInputs = document.querySelectorAll('input[type="file"][name="photos"]');
 
     fileInputs.forEach((input) => {
-      input.addEventListener("change", function (event) {
+      input.addEventListener("change", async function (event) {
         const file = event.target.files[0];
-        const previewContainer = event.target.closest("form").querySelector(".preview-container");
+        const form = event.target.closest("form");
+        const previewContainer = form.querySelector(".preview-container");
 
-        // Clear previous preview
         if (previewContainer) previewContainer.innerHTML = "";
 
         if (file && file.type.startsWith("image/")) {
-          const reader = new FileReader();
-          reader.onload = function (e) {
+          try {
+            const imgURL = await readImageAsDataURL(file);
             const img = document.createElement("img");
-            img.src = e.target.result;
+            img.src = imgURL;
             img.className = "img-preview";
             img.style.maxWidth = "100px";
             img.style.borderRadius = "0.5rem";
             img.style.marginTop = "0.5rem";
             previewContainer?.appendChild(img);
-          };
-          reader.readAsDataURL(file);
+          } catch (err) {
+            console.error("Error loading image preview:", err);
+          }
         }
       });
     });
+
+    function readImageAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+
+        reader.readAsDataURL(file);
+      });
+    }
   });
 </script>
 {% endblock %}
