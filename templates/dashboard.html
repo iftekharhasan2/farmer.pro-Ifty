@@ -204,13 +204,13 @@ Dashboard – {{ project.name }}
           </td>
           <td class="p-4">{{ t.time_range }}</td>
           <td>
-            {% if photos %}
+            {% comment %} {% if photos %}
             <div class="mb-2 d-flex flex-wrap">
               {% for photo in photos %}
               <img src="{{ url_for('static', filename='uploads/' ~ photo) }}" class="rounded me-2 mb-2" width="60" alt="Task photo">
               {% endfor %}
             </div>
-            {% endif %}
+            {% endif %} {% endcomment %}
             <form method="post" action="{{ url_for('upload_photos', pid=project._id) }}" enctype="multipart/form-data" class="d-flex flex-column gap-2">
               <input type="hidden" name="task_idx" value="{{ idx }}">
               <input type="file" name="photos" accept="image/*" class="form-control form-control-sm" required {% if photos %}disabled{% endif %}>
