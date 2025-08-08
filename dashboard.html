@@ -1,0 +1,391 @@
+{% extends 'profile.html' %}
+
+{% block title %}
+Dashboard – {{ project.name }}
+{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Cabin&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/farming-theme.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+<style>
+  body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f7f9fc;
+  }
+
+  .swiper {
+    width: 100%;
+    padding-bottom: 2rem;
+  }
+
+  .swiper-slide {
+    background: #fff;
+    border-radius: 1rem;
+    padding: 1rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .badge {
+    font-size: 0.9rem;
+    padding: 0.4em 0.7em;
+    border-radius: 0.4rem;
+    font-weight: 500;
+  }
+
+  .swiper-slide h6 {
+    box-shadow: 0 2px 6px rgba(0, 123, 255, 0.1);
+    transition: all 0.3s ease-in-out;
+  }
+
+  .swiper-slide h6:hover {
+    transform: scale(1.02);
+    background-color: #d0eaff;
+  }
+
+  .swiper-slide p {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #2f4f4f;
+  }
+
+  @media (max-width: 768px) {
+    h3 {
+      font-size: 1.25rem;
+    }
+
+    small {
+      font-size: 0.9rem;
+    }
+
+    .btn,
+    .form-control {
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
+    }
+
+    .swiper {
+      height: auto;
+      padding-bottom: 3rem;
+    }
+
+    .card {
+      border-radius: 1rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .table-responsive {
+      display: none !important;
+    }
+
+    .swiper {
+      height: 100vh;
+    }
+
+    .swiper-slide {
+      height: 100vh;
+      padding: 2rem 1rem;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .swiper-slide img {
+      width: 100%;
+      max-width: 300px;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    form input[type="file"] {
+      font-size: 0.85rem;
+    }
+
+    .swiper-pagination {
+      position: absolute;
+      bottom: 10px;
+      text-align: center;
+      width: 100%;
+    }
+    .time {
+      font-size: 1.1rem;
+      color: #2c3e50;
+      margin-top: 0.5rem;
+      background: #66acdeff;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+
+<noscript>
+  <div class="alert alert-warning text-center">
+    This page works best with JavaScript enabled.
+  </div>
+</noscript>
+
+<!-- Project Summary Cards -->
+<div class="container my-4">
+  <div class="row g-3">
+    {% set stats = [
+      ('text-success', project.target ~ ' kg', 'Target'),
+      ('text-primary', (project.weight or 0) ~ ' kg', 'Current'),
+      ('text-warning', 'Level ' ~ project.feed_level, 'Feed')
+    ] %}
+    {% for color, value, label in stats %}
+    <div class="col-12 col-sm-6 col-md-4">
+      <div class="card text-center h-100">
+        <div class="card-body">
+          <h3 class="{{ color }}">{{ value }}</h3>
+          <small>{{ label }}</small>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Weight Input or Countdown -->
+<div class="container-fluid mb-4">
+  {% if show_weight_input %}
+  <form method="post" action="{{ url_for('update_weight', pid=project._id) }}" class="row g-2 align-items-center">
+    <div class="col-12 col-sm-8">
+      <input type="number" step="0.1" name="weight" class="form-control form-control-lg" placeholder="Today’s weight (kg)" required>
+    </div>
+    <div class="col-12 col-sm-4">
+      <button class="btn btn-success w-100 btn-lg">Save</button>
+    </div>
+  </form>
+  {% else %}
+  <div class="alert alert-info d-flex align-items-center">
+    <i class="bi bi-clock me-2"></i>
+    <div>Next weight check in <strong>{{ days_left }}</strong> day(s).</div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Task Section -->
+<div class="container">
+  <h4 class="mb-3" style="font-weight: 700; color: #2e7d32;padding-left: 1rem;">
+    <i class="bi bi-journal-check me-1"></i> Today’s Tasks
+  </h4>
+  <h2 style="font-family: 'SolaimanLipi', Arial, sans-serif; font-size: 18px; color: #2c3e50; text-align: center;">
+    <strong>পরের দিনের কাজ শুরু পর্যন্ত অবশিষ্ট সময়:</strong> {{ now }}
+  </h2>
+  <p class="text-muted small">
+  <i class="bi bi-hourglass-split me-1"></i>
+  নতুন দিনের শুরু পর্যন্ত বাকি: 
+  <span id="countdown">{{ now }}</span>
+  </p>
+
+  <!-- Desktop Table View -->
+  <div class="table-responsive d-none d-md-block">
+<div class="accordion" id="phaseAccordion">
+  {% set task_done = project.task_done or {} %}
+  {% set global_idx = 1 %}
+
+  {% for phase_dict in schedule %}
+    {% set phase = phase_dict.phase %}
+    {% set photos = project.task_photo.get(phase, []) %}
+    {% if photos is string %}
+      {% set photos = [photos] %}
+    {% endif %}
+
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="heading-{{ loop.index }}">
+        <button class="accordion-button collapsed fw-bold text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ loop.index }}">
+          <i class="bi bi-collection-play me-2"></i> Phase: {{ phase|capitalize }}
+          {% if photos|length > 0 %}
+            <span class="badge bg-success ms-2"><i class="bi bi-check-circle"></i> Done</span>
+          {% else %}
+            <span class="badge bg-warning text-dark ms-2"><i class="bi bi-hourglass-split"></i> Pending</span>
+          {% endif %}
+        </button>
+      </h2>
+      <div id="collapse-{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#phaseAccordion">
+        <div class="accordion-body p-0">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Task</th>
+                <th>Time</th>
+                <th>Upload Photo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for t in phase_dict.tasks %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>
+                  <strong style="font-size: 1.1rem; color: #1a237e;">
+                    <i class="bi bi-list-task me-1"></i>{{ t.description }}
+                  </strong>
+                </td>
+                <td class="p-4">{{ t.time_range }}</td>
+                
+                {% if loop.first %}
+                <td rowspan="{{ phase_dict.tasks|length }}">
+                  <form method="post" action="{{ url_for('upload_photos', pid=project._id) }}" enctype="multipart/form-data" class="d-flex flex-column gap-2">
+                    <input type="hidden" name="task_idx" value="{{ phase }}">
+                    <input type="file" name="photos" accept="image/*" class="form-control form-control-sm" required {% if photos %}disabled{% endif %}>
+                    <button type="submit" class="btn btn-sm btn-primary mt-1" {% if photos %}disabled{% endif %}>Upload</button>
+                  </form>
+                </td>
+                {% endif %}
+              </tr>
+              {% endfor %}
+            </tbody>
+            
+          </table>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+  </div>
+
+  <!-- Mobile Swiper View -->
+<div class="d-md-none">
+  <div class="swiper">
+    <div class="swiper-wrapper">
+      {% for phase_dict in schedule %}
+        {% set phase = phase_dict.phase %}
+        {% set photos = project.task_photo.get(phase, []) %}
+        {% if photos is string %}
+          {% set photos = [photos] %}
+        {% endif %}
+
+        <div class="swiper-slide">
+          <div class="w-100 d-flex flex-column align-items-center justify-content-center p-4 bg-light">
+
+            <!-- Phase Header -->
+            <button class="btn w-100 text-start mb-3 d-flex justify-content-between align-items-center"
+                    data-bs-toggle="collapse" data-bs-target="#collapse-{{ loop.index }}" style="background: linear-gradient(to right, #e3f2fd, #bbdefb); border-left: 5px solid #1976d2; border-radius: 0.5rem; font-size: 1.15rem; font-weight: 600; color: #0d47a1;">
+              <span><i class="bi bi-collection-play me-2"></i>Phase: {{ phase | capitalize }}</span>
+              <i class="bi bi-chevron-down"></i>
+            </button>
+
+            <!-- Collapsible Task List -->
+            <div class="collapse w-100" id="collapse-{{ loop.index }}">
+              {% for t in phase_dict.tasks %}
+                <div class="bg-white border rounded p-3 my-2 shadow-sm">
+                  <p class="mb-1 fw-bold text-dark">
+                    <i class="bi bi-list-task me-2"></i>{{ t.description }}
+                  </p>
+                  <p class="mb-1 text-secondary">
+                    <i class="bi bi-clock me-1"></i>{{ t.time_range }}
+                  </p>
+                </div>
+              {% endfor %}
+            </div>
+
+            <!-- Status -->
+            {% if photos|length > 0 %}
+              <span class="badge bg-success my-3"><i class="bi bi-check-circle"></i> Done</span>
+            {% else %}
+              <span class="badge bg-warning text-dark my-3"><i class="bi bi-hourglass-split"></i> Pending</span>
+            {% endif %}
+
+            <!-- Upload Form -->
+            <form method="post" action="{{ url_for('upload_photos', pid=project._id) }}" enctype="multipart/form-data" class="d-flex flex-column gap-2 w-100 px-2">
+              <input type="hidden" name="task_idx" value="{{ phase }}">
+              <input type="file" name="photos" accept="image/*" class="form-control form-control-sm" required {% if photos %}disabled{% endif %}>
+              <button type="submit" class="btn btn-sm btn-primary mt-1 w-100" {% if photos %}disabled{% endif %}>Upload</button>
+            </form>
+
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="swiper-pagination mt-3"></div>
+  </div>
+</div>
+
+<!-- Navigation -->
+<div class="container mt-4">
+  <a href="{{ url_for('projects') }}" class="btn btn-outline-secondary w-100 w-sm-auto">
+    <i class="bi bi-arrow-left-circle"></i> Back to Projects
+  </a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    new Swiper('.swiper', {
+      pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+      },
+    });
+
+    const fileInputs = document.querySelectorAll('input[type="file"][name="photos"]');
+    fileInputs.forEach((input) => {
+      input.addEventListener("change", async function (event) {
+        const file = event.target.files[0];
+        const form = event.target.closest("form");
+        const previewContainer = form.querySelector(".preview-container");
+        if (previewContainer) previewContainer.innerHTML = "";
+        if (file && file.type.startsWith("image/")) {
+          try {
+            const imgURL = await readImageAsDataURL(file);
+            const img = document.createElement("img");
+            img.src = imgURL;
+            img.className = "img-preview";
+            img.style.maxWidth = "100px";
+            img.style.borderRadius = "0.5rem";
+            img.style.marginTop = "0.5rem";
+            previewContainer?.appendChild(img);
+          } catch (err) {
+            console.error("Error loading image preview:", err);
+          }
+        }
+      });
+    });
+
+    function readImageAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+    }
+  });
+</script>
+<script>
+  const swiper = new Swiper('.swiper', {
+    pagination: {
+      el: '.swiper-pagination',
+    },
+  });
+</script>
+<script>
+function updateCountdown() {
+  fetch("/time-left")
+    .then(res => res.text())
+    .then(data => {
+      document.getElementById("countdown").textContent = data;
+    });
+}
+setInterval(updateCountdown, 1000);
+</script>
+
+{% endblock %}

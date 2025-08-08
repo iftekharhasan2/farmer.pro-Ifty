@@ -64,7 +64,6 @@ def time_left_for_next_day_bangla():
     next_day = (now + datetime.timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
     remaining = next_day - now
     total_seconds = int(remaining.total_seconds())
-
     hours, remainder = divmod(total_seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
 
@@ -82,34 +81,99 @@ def feed_level(weight, animal):
         elif weight < 280: return 2
         return 3
 
+def Grass(weight, animal):
+    if animal == "goat":
+        return 2.5
+    else:
+        if weight < 150:
+            return 5
+        elif weight < 250:
+            return 7.5
+        if weight < 400:
+            return 12.5
+        elif weight < 500:
+            return 17.5
+        return 17.5
+
 def build_schedule(day, weight, animal):
+    day=day # need work
     if animal == "cow":
         return [
-            {"description": "গোয়াল ঘর পরিষ্কার করুন, চারি পরিষ্কার করুন, গরুর পা হাটু পর্যন্ত ধুয়ে দিন", "time_range": "৬ঃ০০ - ৭ঃ০০"},
-            {"description": "সবুজ ঘাস খাওয়ান", "time_range": "৭ঃ০০ - ৮ঃ০০"},
-            {"description": f"কনসেন্ট্রেটেড ফিড লেভেল {feed_level(weight, animal)} + চিটাগুড় মিশ্রিত পানি", "time_range": "৮ঃ০০ - ৯ঃ০০"},
-            {"description": "খড় (২০ লিটার পানিতে ২০ গ্রাম চিটাগুড় দিয়ে ভিজিয়ে খাওয়ান)", "time_range": "৯ঃ০০ - ১০ঃ০০"},
-            {"description": "গোয়াল ঘর পরিষ্কার করুন", "time_range": "১০ঃ০০ - ১১ঃ০০"},
-            {"description": "পানি দিয়ে চারি ধুয়ে দিন", "time_range": "১১ঃ০০ - ১২ঃ০০"},
-            {"description": "গরুকে গোসল করান", "time_range": "১২ঃ০০ - ১ঃ০০"},
-            {"description": "চারি + চিটাগুড় মিশ্রিত পানি", "time_range": "১ঃ০০ - ৩ঃ০০"},
-            {"description": "সবুজ ঘাস খাওয়ান", "time_range": "৩ঃ০০ - ৪ঃ০০"},
-            {"description": "কনসেন্ট্রেট + চিটাগুড়", "time_range": "৪ঃ০০ - ৫ঃ০০"},
-            {"description": "খড় + চিটাগুড় মিশ্রিত পানি", "time_range": "৫ঃ০০ - ৬ঃ০০"},
-            {"description": "ঘর পরিষ্কার, কয়েল দিন", "time_range": "৬ঃ০০ - ৭ঃ০০"},
+            {
+                "phase": "সকাল",
+                "tasks": [
+                    {"description": "গোয়াল ঘর পরিষ্কার করুন, চারি পরিষ্কার করুন, গরুর পা হাঁটু পর্যন্ত ধুয়ে দিন", "time_range": "সকাল ৬ঃ০০ - ৭ঃ০০"},
+                    {"description": f"সবুজ ঘাস খাওয়ান ({Grass(weight, animal)} কেজি)", "time_range": "সকাল ৭ঃ০০ - ৮ঃ০০"},
+                    {"description": f"দানাদার খাদ্য {feed_level(weight, animal)} কেজি + চিটাগুড় মিশ্রিত পানি খাওয়ান (৫ গ্রাম / ৫ লিটার)", "time_range": "সকাল ৮ঃ০০ - ৯ঃ০০"},
+                    {"description": "খড় খাওয়ান (চিটাগুড় মিশ্রিত পানি খড়ের উপর ছিটিয়ে দিন)", "time_range": "সকাল ৯ঃ০০ - ১০ঃ০০"},
+                    {"description": "প্রয়োজন অনুযায়ী সবুজ ঘাস প্রদান করুন", "time_range": "সকাল ১০ঃ০০ - ১১ঃ০০"},
+                ]
+            },
+            {
+                "phase": "দুপুর",
+                "tasks": [
+                    {"description": "পানি দিয়ে চারি ধুয়ে দিন, গোয়াল ঘর পরিষ্কার করুন", "time_range": "সকাল ১১ঃ০০ - ১২ঃ০০"},
+                    {"description": "গরুকে গোসল করিয়ে দিন (গরমে প্রতিদিন, শীতে ২ দিনে একবার)", "time_range": "দুপুর ১২ঃ০০ - ১ঃ০০"},
+                    {"description": "চারিতে পরিষ্কার পানি দিন এবং গরুকে বিশ্রাম নিতে দিন", "time_range": "দুপুর ১ঃ০০ - ৩ঃ০০"},
+                ]
+            },
+            {
+                "phase": "বিকাল",
+                "tasks": [
+                    {"description": f"সবুজ ঘাস খাওয়ান ({Grass(weight, animal)} কেজি)", "time_range": "বিকাল ৩ঃ০০ - ৪ঃ০০"},
+                    {"description": f"দানাদার খাদ্য খাওয়ান {feed_level(weight, animal)} কেজি", "time_range": "বিকাল ৪ঃ০০ - ৫ঃ০০"},
+                    {"description": "খড় খাওয়ান (চিটাগুড় মিশ্রিত পানি খড়ের উপর ছিটিয়ে দিন)", "time_range": "বিকাল ৫ঃ০০ - ৬ঃ০০"},
+                    {"description": "প্রয়োজন অনুযায়ী সবুজ ঘাস প্রদান করুন", "time_range": "বিকাল ৬ঃ০০ - সন্ধ্যা ৬ঃ৪৫"},
+                ]
+            },
+            {
+                "phase": "সন্ধ্যা",
+                "tasks": [
+                    {"description": "গোয়াল ঘর পরিষ্কার করুন, রাতের জন্য কয়েল জ্বালিয়ে দিন, চারি পরিষ্কার করে পানি দিন", "time_range": "সন্ধ্যা ৭ঃ০০ - ৮ঃ০০"}
+                ]
+            }
         ]
+
     elif animal == "goat":
-        level = feed_level(weight, animal)
         return [
-            {"description": "সবুজ ঘাস খাওয়ান", "time_range": "৬ঃ৩০"},
-            {"description": f"কনসেন্ট্রেট লেভেল {level} (≈ {200 + 50*(level-1)} g)", "time_range": "৮ঃ৩০"},
-            {"description": "সবুজ ঘাস খাওয়ান", "time_range": "৯ঃ৩০ - ১২ঃ০০"},
-            {"description": "সবুজ ঘাস খাওয়ান", "time_range": "৩ঃ০০"},
-            {"description": "অর্ধেক কনসেন্ট্রেট রিমেইন্ডার", "time_range": "৪ঃ৩০"},
-            {"description": "সবুজ ঘাস খাওয়ান", "time_range": "৫ঃ৩০ - ৭ঃ৩০"},
+            {
+                "phase": "সকাল",
+                "tasks": [
+                    {"description": "ছাগলের ঘর পরিষ্কার করুন, চারি পরিষ্কার করুন, ছাগলের পা হাঁটু পর্যন্ত ধুয়ে দিন", "time_range": "সকাল ৬ঃ০০ - ৭ঃ০০"},
+                    {"description": f"সবুজ ঘাস খাওয়ান {Grass(weight, animal)} কেজি", "time_range": "সকাল ৭ঃ০০ - ৮ঃ০০"},
+                    {"description": f"দানাদার খাদ্য {feed_level(weight, animal)} গ্রাম(একটি বাটিতে পরিমাপ করে দিন) + চিটাগুড় মিশ্রিত পানি (৫ গ্রাম / ৫ লিটার)", "time_range": "সকাল ৮ঃ০০ - ৯ঃ০০"},
+                    {"description": "খড় খাওয়ান (চিটাগুড় মিশ্রিত পানি খড়ের উপর ছিটিয়ে দিন)", "time_range": "সকাল ৯ঃ০০ - ১০ঃ০০"},
+                    {"description": "প্রয়োজন অনুযায়ী সবুজ ঘাস প্রদান করুন", "time_range": "সকাল ১০ঃ০০ - ১১ঃ০০"},
+                    {"description": "পানি দিয়ে চারি ধুয়ে দিন, ছাগলের ঘর পরিষ্কার করুন", "time_range": "সকাল ১১ঃ০০ - ১২ঃ০০"},
+                ]
+            },
+            {
+                "phase": "দুপুর",
+                "tasks": [
+                    {"description": "চারিতে পরিষ্কার পানি দিন এবং ছাগলকে বিশ্রাম নিতে দিন", "time_range": "দুপুর ১ঃ০০ - ৩ঃ০০"},
+                    {"description": f"সবুজ ঘাস খাওয়ান ({Grass(weight, animal)} কেজি", "time_range": "দুপুর ৩ঃ০০ - ৪ঃ০০"},
+                    {"description": f"দানাদার খাদ্য {feed_level(weight, animal)} গ্রাম", "time_range": "বিকাল ৪ঃ০০ - ৫ঃ০০"},
+                    {"description": "খড় খাওয়ান (চিটাগুড় মিশ্রিত পানি খড়ের উপর ছিটিয়ে দিন)", "time_range": "বিকাল ৫ঃ০০ - ৬ঃ০০"},
+                    {"description": "প্রয়োজন অনুযায়ী সবুজ ঘাস দিন", "time_range": "বিকাল ৬ঃ০০ - সন্ধ্যা ৬ঃ৪৫"},
+                ]
+            },
+            {
+                "phase": "বিকাল",
+                "tasks": [
+                    {"description": "ছাগলের ঘর পরিষ্কার করুন, রাতের জন্য কয়েল জ্বালিয়ে দিন, চারি পরিষ্কার করে পানি দিন", "time_range": "সন্ধ্যা ৭ঃ০০ - ৮ঃ০০"},
+                ]
+            }
         ]
+
     else:
-        return [{"description": f"Generic schedule for {animal}", "time_range": "–"}]
+        return [
+            {
+                "phase": "default",
+                "tasks": [
+                    {"description": f"{animal} এর জন্য সাধারণ কাজ", "time_range": "–"}
+                ]
+            }
+        ]
 
 # Routes
 @app.route('/')
@@ -199,22 +263,69 @@ def dashboard(pid):
     if not proj:
         flash("Not found!", "danger")
         return redirect(url_for("projects"))
+
     days = days_since(proj["purchase_date"])
     today = date.today().isoformat()
     now = time_left_for_next_day_bangla()
     period = proj["check_period"]
     show_weight = (days % period == 0 and days != 0) or proj["type"] == "goat"
     days_left = (period - (days % period)) % period
+
+    # Feed level update check
     if days % period == 0 and days != 0 and proj.get("last_check") != days:
         new_level = feed_level(proj["weight"] + (30 if proj["type"] == "cow" else 0), proj["type"])
-        proj_col.update_one({"_id": proj["_id"]}, {"$set": {"feed_level": new_level, "last_check": days}})
-        proj = proj_col.find_one({"_id": proj["_id"]})
-    schedule = build_schedule(today, proj["weight"], proj["type"])
-    proj.setdefault("task_done", {})
-    proj.setdefault("task_photo", {})
-    return render_template("dashboard.html", project=proj, schedule=schedule, days=days,
-                           show_weight_input=show_weight, days_left=days_left ,today=today , now=now)
+        proj_col.update_one(
+            {"_id": proj["_id"]},
+            {"$set": {"feed_level": new_level, "last_check": days}}
+        )
+        proj = proj_col.find_one({"_id": proj["_id"]})  # Refresh after update
 
+    # --- Daily task_done & task_photo reset logic ---
+    # Store last_reset_date in project doc to track when last reset happened
+    last_reset_date = proj.get("task_done_reset_date")
+
+    if last_reset_date != today:
+        # Reset for new day: clear today's entries and update reset date
+        proj_col.update_one(
+            {"_id": proj["_id"]},
+            {
+                "$set": {
+                    "task_done": {today: {}},
+                    "task_photo": {today: {}},
+                    "task_done_reset_date": today
+                }
+            }
+        )
+        proj = proj_col.find_one({"_id": proj["_id"]})  # Refresh after reset
+
+    # Ensure keys exist in case no reset triggered (show today's data)
+    task_done = proj.get("task_done", {})
+    task_photo = proj.get("task_photo", {})
+    if today not in task_done:
+        task_done[today] = {}
+    if today not in task_photo:
+        task_photo[today] = {}
+
+    # Inject data to template
+    proj["task_done"] = task_done
+    proj["task_photo"] = task_photo
+    proj["task_done_date"] = today
+
+    schedule = build_schedule(today, proj["weight"], proj["type"])
+
+    return render_template(
+        "dashboard.html",
+        project=proj,
+        schedule=schedule,
+        days=days,
+        show_weight_input=show_weight,
+        days_left=days_left,
+        today=today,
+        now=now
+    )
+    
+    
+    
 @app.route("/projects/<pid>/weight", methods=["POST"])
 def update_weight(pid):
     try:
@@ -442,6 +553,11 @@ def admin_delete_project(pid):
     else:
         flash("Project not found or already deleted", "warning")
     return redirect(url_for('admin_dashboard'))
+
+
+@app.route("/time-left")
+def time_left():
+    return time_left_for_next_day_bangla()
 
 if __name__ == '__main__':
     app.run(debug=True)
